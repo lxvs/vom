@@ -11,6 +11,30 @@ die () {
     exit 1
 }
 
+CreateBat () {
+    local mintty='"%ProgramFiles%\Git\usr\bin\mintty.exe"'
+    local cmdflag='--title Vom /bin/bash --login -c "%bashcmd%"'
+    if test "$uninstall"
+    then
+        printf "Remove bat file\n"
+        test ! -e "$(cygpath "$WINDIR\\vom.bat")" && return
+        net session 1>/dev/null 2>&1 ||
+            die "error: not enough permission to remove bat file"
+        rm -f "$(cygpath "$WINDIR\\vom.bat")"
+    else
+        test ! "$bat" && return
+        printf "Create bat file\n"
+        net session 1>/dev/null 2>&1 ||
+            die "error: not enough permission to create bat file"
+        printf >"$(cygpath "$WINDIR\\vom.bat")" "%s\r\n" \
+            "@echo off" \
+            "setlocal" \
+            'set "bashcmd=/usr/bin/vim -- %*"' \
+            'set "bashcmd=%bashcmd:"=\"%"' \
+            "$mintty $cmdflag"
+    fi
+}
+
 RegFileTypes () {
     local ft
     if test "$uninstall"
@@ -138,10 +162,33 @@ Register () {
     local icon='%SystemRoot%\system32\imageres.dll,-102'
     local t_sz="REG_SZ" t_ex="REG_EXPAND_SZ" t_none="REG_NONE"
     local -A ftt
+    test ! "$reg" && return
     InitFileTypeTable || return
     RegProgram || return
     RegTextType || return
     RegFileTypes || return
+}
+
+CheckOnlyMode () {
+    test ! "$only" && return
+    if test "$regonly"
+    then
+        Register
+        exit
+    fi
+    if test "$batonly"
+    then
+        CreateBat
+        exit
+    fi
+    die "error: no matching operation in only mode"
+}
+
+Install () {
+    IsOnWindows || die "error: system is not Windows"
+    CheckOnlyMode
+    Register || return
+    CreateBat || return
 }
 
 IsOnWindows () {
@@ -156,6 +203,38 @@ ParseArgs () {
             uninstall=1
             shift
             ;;
+        -b|--create-bat)
+            bat=1
+            shift
+            ;;
+        --no-create-bat)
+            test "$batonly" &&
+                die "error: \`no-create-bat' and \`create-bat-only' cannot be used together"
+            bat=
+            shift
+            ;;
+        --create-bat-only)
+            bat=1
+            only=1
+            batonly=1
+            shift
+            ;;
+        -r|--register)
+            reg=1
+            shift
+            ;;
+        --no-register)
+            test "$regonly" &&
+                die "error: \`no-register' and \`register-only' cannot be used together"
+            reg=
+            shift
+            ;;
+        --register-only)
+            reg=1
+            only=1
+            regonly=1
+            shift
+            ;;
         *)
             die "error: invalid argument \`$1'"
             ;;
@@ -164,9 +243,9 @@ ParseArgs () {
 }
 
 main () {
-    local uninstall=
+    local uninstall= only= bat= batonly= reg=1 regonly=
     ParseArgs "$@"
-    IsOnWindows && Register
+    Install || return
 }
 
 main "$@"
