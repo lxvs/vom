@@ -36,6 +36,20 @@ RegFileTypes () {
     fi
 }
 
+RegTextType () {
+    if test "$uninstall"
+    then
+        printf "Unregister for text type\n"
+        reg delete "$classes\\SystemFileAssociations\\text\\shell\\edit\\command" //f 1>/dev/null 2>&1
+        reg delete "$classes\\SystemFileAssociations\\text\\shell\\open\\command" //f 1>/dev/null 2>&1
+        return 0
+    else
+        printf "Register for text type\n"
+        reg add "$classes\\SystemFileAssociations\\text\\shell\\edit\\command" //ve //t "$t_ex" //d "$command" //f 1>/dev/null || return
+        reg add "$classes\\SystemFileAssociations\\text\\shell\\open\\command" //ve //t "$t_ex" //d "$command" //f 1>/dev/null || return
+    fi
+}
+
 RegProgram () {
     local text="Edit &with Vim on Mintty"
     if test "$uninstall"
@@ -122,6 +136,7 @@ Register () {
     local -A ftt
     InitFileTypeTable || return
     RegProgram || return
+    RegTextType || return
     RegFileTypes || return
 }
 
