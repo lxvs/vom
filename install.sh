@@ -29,7 +29,7 @@ CreateBat () {
         printf >"$(cygpath "$WINDIR\\vom.bat")" "%s\r\n" \
             "@echo off" \
             "setlocal" \
-            'set "bashcmd=/usr/bin/vim -- %*"' \
+            'set "bashcmd=/usr/bin/vim %*"' \
             'set "bashcmd=%bashcmd:"=\"%"' \
             "$mintty $cmdflag"
     fi
