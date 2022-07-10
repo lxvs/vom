@@ -21,7 +21,6 @@ RegFileTypes () {
         reg add "$classes\\vimom.$ft\\DefaultIcon" //ve //t "$t_ex" //d "$icon" //f 1>/dev/null || return
         reg add "$classes\\vimom.$ft\\shell\\open" //v "Icon" //t "$t_ex" //d "$mintty" //f 1>/dev/null || return
         reg add "$classes\\vimom.$ft\\shell\\open\\command" //ve //t "$t_ex" //d "$command" //f 1>/dev/null || return
-        reg add "$classes\\.$ft" //ve //t "$t_sz" //d "vimom.$ft" //f 1>/dev/null || return
         reg add "$classes\\.$ft\\OpenWithProgids" //v "vimom.$ft" //t "$t_none" //f 1>/dev/null || return
     done
 }
