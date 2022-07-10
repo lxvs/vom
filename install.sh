@@ -18,19 +18,19 @@ RegFileTypes () {
         for ft in "${!ftt[@]}"
         do
             printf "Unregister file type \`%s'\n" "$ft"
-            reg delete "$classes\\vimom.$ft" //f 1>/dev/null 2>&1
-            reg delete "$classes\\.$ft\\OpenWithProgids" //v "vimom.$ft" //f 1>/dev/null 2>&1
+            reg delete "$classes\\vom.$ft" //f 1>/dev/null 2>&1
+            reg delete "$classes\\.$ft\\OpenWithProgids" //v "vom.$ft" //f 1>/dev/null 2>&1
         done
         return 0
     else
         for ft in "${!ftt[@]}"
         do
             printf "Register file type \`%s'\n" "$ft"
-            reg add "$classes\\vimom.$ft" //ve //t "$t_sz" //d "${ftt[$ft]}" //f 1>/dev/null || return
-            reg add "$classes\\vimom.$ft\\DefaultIcon" //ve //t "$t_ex" //d "$icon" //f 1>/dev/null || return
-            reg add "$classes\\vimom.$ft\\shell\\open" //v "Icon" //t "$t_ex" //d "$mintty" //f 1>/dev/null || return
-            reg add "$classes\\vimom.$ft\\shell\\open\\command" //ve //t "$t_ex" //d "$command" //f 1>/dev/null || return
-            reg add "$classes\\.$ft\\OpenWithProgids" //v "vimom.$ft" //t "$t_none" //f 1>/dev/null || return
+            reg add "$classes\\vom.$ft" //ve //t "$t_sz" //d "${ftt[$ft]}" //f 1>/dev/null || return
+            reg add "$classes\\vom.$ft\\DefaultIcon" //ve //t "$t_ex" //d "$icon" //f 1>/dev/null || return
+            reg add "$classes\\vom.$ft\\shell\\open" //v "Icon" //t "$t_ex" //d "$mintty" //f 1>/dev/null || return
+            reg add "$classes\\vom.$ft\\shell\\open\\command" //ve //t "$t_ex" //d "$command" //f 1>/dev/null || return
+            reg add "$classes\\.$ft\\OpenWithProgids" //v "vom.$ft" //t "$t_none" //f 1>/dev/null || return
         done
     fi
 }
@@ -54,17 +54,17 @@ RegProgram () {
     if test "$uninstall"
     then
         printf "Unregister program\n"
-        reg delete "$classes\\*\\shell\\vimom" //f 1>/dev/null 2>&1
-        reg delete "$classes\\Applications\\vimom.exe" //f 1>/dev/null 2>&1
+        reg delete "$classes\\*\\shell\\vom" //f 1>/dev/null 2>&1
+        reg delete "$classes\\Applications\\vom.exe" //f 1>/dev/null 2>&1
         return 0
     else
         printf "Register program\n"
-        reg add "$classes\\*\\shell\\vimom" //ve //t "$t_sz" //d "$text" //f 1>/dev/null || return
-        reg add "$classes\\*\\shell\\vimom" //v "Icon" //t "$t_ex" //d "$mintty" //f  1>/dev/null || return
-        reg add "$classes\\*\\shell\\vimom\\command" //ve //t "$t_ex" //d "$command" //f 1>/dev/null || return
-        reg add "$classes\\Applications\\vimom.exe\\DefaultIcon" //ve //t "$t_ex" //d "$icon" //f 1>/dev/null || return
-        reg add "$classes\\Applications\\vimom.exe\\shell\\open" //v "Icon" //t "$t_ex" //d "$mintty" //f 1>/dev/null || return
-        reg add "$classes\\Applications\\vimom.exe\\shell\\open\\command" //ve //t "$t_ex" //d "$command" //f 1>/dev/null || return
+        reg add "$classes\\*\\shell\\vom" //ve //t "$t_sz" //d "$text" //f 1>/dev/null || return
+        reg add "$classes\\*\\shell\\vom" //v "Icon" //t "$t_ex" //d "$mintty" //f  1>/dev/null || return
+        reg add "$classes\\*\\shell\\vom\\command" //ve //t "$t_ex" //d "$command" //f 1>/dev/null || return
+        reg add "$classes\\Applications\\vom.exe\\DefaultIcon" //ve //t "$t_ex" //d "$icon" //f 1>/dev/null || return
+        reg add "$classes\\Applications\\vom.exe\\shell\\open" //v "Icon" //t "$t_ex" //d "$mintty" //f 1>/dev/null || return
+        reg add "$classes\\Applications\\vom.exe\\shell\\open\\command" //ve //t "$t_ex" //d "$command" //f 1>/dev/null || return
     fi
 }
 
