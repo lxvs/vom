@@ -14,23 +14,41 @@ die () {
 RegFileTypes () {
     local ft
     local icon='%SystemRoot%\system32\imageres.dll,-102'
-    for ft in "${!ftt[@]}"
-    do
-        printf "Register file type \`%s'\n" "$ft"
-        reg add "$classes\\vimom.$ft" //ve //t "$t_sz" //d "${ftt[$ft]}" //f 1>/dev/null || return
-        reg add "$classes\\vimom.$ft\\DefaultIcon" //ve //t "$t_ex" //d "$icon" //f 1>/dev/null || return
-        reg add "$classes\\vimom.$ft\\shell\\open" //v "Icon" //t "$t_ex" //d "$mintty" //f 1>/dev/null || return
-        reg add "$classes\\vimom.$ft\\shell\\open\\command" //ve //t "$t_ex" //d "$command" //f 1>/dev/null || return
-        reg add "$classes\\.$ft\\OpenWithProgids" //v "vimom.$ft" //t "$t_none" //f 1>/dev/null || return
-    done
+    if test "$uninstall"
+    then
+        for ft in "${!ftt[@]}"
+        do
+            printf "Unregister file type \`%s'\n" "$ft"
+            reg delete "$classes\\vimom.$ft" //f 1>/dev/null 2>&1
+            reg delete "$classes\\.$ft\\OpenWithProgids" //v "vimom.$ft" //f 1>/dev/null 2>&1
+        done
+        return 0
+    else
+        for ft in "${!ftt[@]}"
+        do
+            printf "Register file type \`%s'\n" "$ft"
+            reg add "$classes\\vimom.$ft" //ve //t "$t_sz" //d "${ftt[$ft]}" //f 1>/dev/null || return
+            reg add "$classes\\vimom.$ft\\DefaultIcon" //ve //t "$t_ex" //d "$icon" //f 1>/dev/null || return
+            reg add "$classes\\vimom.$ft\\shell\\open" //v "Icon" //t "$t_ex" //d "$mintty" //f 1>/dev/null || return
+            reg add "$classes\\vimom.$ft\\shell\\open\\command" //ve //t "$t_ex" //d "$command" //f 1>/dev/null || return
+            reg add "$classes\\.$ft\\OpenWithProgids" //v "vimom.$ft" //t "$t_none" //f 1>/dev/null || return
+        done
+    fi
 }
 
 RegProgram () {
     local text="Edit &with Vim on Mintty"
-    printf "Register program\n"
-    reg add "$classes\\*\\shell\\vimom" //ve //t "$t_sz" //d "$text" //f 1>/dev/null || return
-    reg add "$classes\\*\\shell\\vimom" //v "Icon" //t "$t_ex" //d "$mintty" //f  1>/dev/null || return
-    reg add "$classes\\*\\shell\\vimom\\command" //ve //t "$t_ex" //d "$command" //f 1>/dev/null || return
+    if test "$uninstall"
+    then
+        printf "Unregister program\n"
+        reg delete "$classes\\*\\shell\\vimom" //f 1>/dev/null 2>&1
+        return 0
+    else
+        printf "Register program\n"
+        reg add "$classes\\*\\shell\\vimom" //ve //t "$t_sz" //d "$text" //f 1>/dev/null || return
+        reg add "$classes\\*\\shell\\vimom" //v "Icon" //t "$t_ex" //d "$mintty" //f  1>/dev/null || return
+        reg add "$classes\\*\\shell\\vimom\\command" //ve //t "$t_ex" //d "$command" //f 1>/dev/null || return
+    fi
 }
 
 InitFileTypeTable () {
@@ -111,7 +129,24 @@ IsOnWindows () {
     grep -Gqi '^win' <<<"${OS-}"
 }
 
+ParseArgs () {
+    while test $# -ge 1
+    do
+        case $1 in
+        -u|--uninstall)
+            uninstall=1
+            shift
+            ;;
+        *)
+            die "error: invalid argument \`$1'"
+            ;;
+        esac
+    done
+}
+
 main () {
+    local uninstall=
+    ParseArgs "$@"
     IsOnWindows && Register
 }
 
