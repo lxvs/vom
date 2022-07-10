@@ -13,7 +13,6 @@ die () {
 
 RegFileTypes () {
     local ft
-    local icon='%SystemRoot%\system32\imageres.dll,-102'
     if test "$uninstall"
     then
         for ft in "${!ftt[@]}"
@@ -56,12 +55,16 @@ RegProgram () {
     then
         printf "Unregister program\n"
         reg delete "$classes\\*\\shell\\vimom" //f 1>/dev/null 2>&1
+        reg delete "$classes\\Applications\\vimom.exe" //f 1>/dev/null 2>&1
         return 0
     else
         printf "Register program\n"
         reg add "$classes\\*\\shell\\vimom" //ve //t "$t_sz" //d "$text" //f 1>/dev/null || return
         reg add "$classes\\*\\shell\\vimom" //v "Icon" //t "$t_ex" //d "$mintty" //f  1>/dev/null || return
         reg add "$classes\\*\\shell\\vimom\\command" //ve //t "$t_ex" //d "$command" //f 1>/dev/null || return
+        reg add "$classes\\Applications\\vimom.exe\\DefaultIcon" //ve //t "$t_ex" //d "$icon" //f 1>/dev/null || return
+        reg add "$classes\\Applications\\vimom.exe\\shell\\open" //v "Icon" //t "$t_ex" //d "$mintty" //f 1>/dev/null || return
+        reg add "$classes\\Applications\\vimom.exe\\shell\\open\\command" //ve //t "$t_ex" //d "$command" //f 1>/dev/null || return
     fi
 }
 
@@ -132,6 +135,7 @@ Register () {
     local mintty='%ProgramFiles%\Git\usr\bin\mintty.exe'
     local minttycmdflag='--title "%1" /bin/bash --login -c "/usr/bin/vim -- \"%1\""'
     local command="$mintty $minttycmdflag"
+    local icon='%SystemRoot%\system32\imageres.dll,-102'
     local t_sz="REG_SZ" t_ex="REG_EXPAND_SZ" t_none="REG_NONE"
     local -A ftt
     InitFileTypeTable || return
