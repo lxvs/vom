@@ -73,6 +73,19 @@ RegTextType () {
     fi
 }
 
+RegMinttyPath () {
+    local apppaths='HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths'
+    if test "$uninstall"
+    then
+        printf "Unregister Mintty path\n"
+        reg delete "$apppaths\\mintty.exe" //f 1>/dev/null 2>&1
+        return 0
+    else
+        printf "Register Mintty path\n"
+        reg add "$apppaths\\mintty.exe" //ve //t "$t_ex" //d "$mintty" //f 1>/dev/null || return
+    fi
+}
+
 RegProgram () {
     local text="Edit &with Vim on Mintty"
     if test "$uninstall"
@@ -165,6 +178,7 @@ Register () {
     test ! "$reg" && return
     InitFileTypeTable || return
     RegProgram || return
+    RegMinttyPath || return
     RegTextType || return
     RegFileTypes || return
 }
