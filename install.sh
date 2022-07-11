@@ -146,6 +146,7 @@ InitFileTypeTable () {
         ['makefile']='Makefile Source File' \
         ['markdown']='Markdown File' \
         ['md']='Markdown File' \
+        ['minttyrc']='Mintty Run Command Script' \
         ['nsh']='EFI Shell Script' \
         ['php']='PHP Source File' \
         ['profile']='Profile Script' \
@@ -159,7 +160,7 @@ InitFileTypeTable () {
         ['txt']='Text Document' \
         ['vb']='vb Source File' \
         ['vim']='Vimscript Source File' \
-        ['vimrc']='Vim Run Command File' \
+        ['vimrc']='Vim Run Command Script' \
         ['xml']='Extensible Markup Language File' \
         ['yaml']='YAML File' \
         ['yml']='YAML File' \
