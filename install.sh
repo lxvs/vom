@@ -18,8 +18,11 @@ CreateBat () {
     then
         printf "Remove bat file\n"
         test ! -e "$(cygpath "$WINDIR\\vom.bat")" && return
-        net session 1>/dev/null 2>&1 ||
-            die "error: not enough permission to remove bat file"
+        if ! net session 1>/dev/null 2>&1
+        then
+            printf >&2 "warning: not enough permission to remove bat file, skipped\n"
+            return 0
+        fi
         rm -f "$(cygpath "$WINDIR\\vom.bat")"
     else
         test ! "$bat" && return
