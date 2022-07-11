@@ -11,6 +11,98 @@ die () {
     exit 1
 }
 
+Backup () {
+    local f=$1
+    local tb
+    local i=1
+    test ! "$bak" && return
+    test ! -e "$f" && return
+    test -d "$f" && rmdir -- "$f" 2>/dev/null && return
+    tb="$f.tgz"
+    if test -e "$tb"
+    then
+        tb="$f.$i.tgz"
+        while test -e "$tb"
+        do
+            printf -v i "%d" "$((i+1))"
+            tb="$f.$i.tgz"
+        done
+    fi
+    printf "\`%s' exists, so create a backup \`%s'\n" "$f" "$tb"
+    pushd "$(dirname "$f")" 1>/dev/null || return
+    tar --remove-files -zcp -f "$tb" "$(basename "$f")" || return
+    popd 1>/dev/null || return
+}
+
+CopyDirs () {
+    local IFS=':'
+    local d
+    for d in $dirs
+    do
+        printf "Copy \`%s' into \`%s'\n" "$d" "$dir/"
+        Backup "$dir/$d" || return
+        cp -r "$copydir/$d" "$dir/$d" || return
+    done
+}
+
+CopyVimrc () {
+    local IFS=':'
+    local rc
+    local rclist="vimrc:.vimrc:_vimrc:NONE"
+    local rclocal="$HOME/.vimrc"
+    for rc in $rclist
+    do
+        test -e "$copydir/$rc" && break
+    done
+    test "$rc" = "NONE" && return
+    printf "Copy \`%s' to \`%s'\n" "$rc" "$rclocal"
+    Backup "$rclocal" || return
+    cp "$copydir/$rc" "$rclocal" || return
+}
+
+GetVimDir () {
+    local verb=Specified
+    case $vimfiles in
+    1)
+        dir="$HOME/vimfiles"
+        ;;
+    '')
+        dir="$HOME/.vim"
+        ;;
+    auto)
+        verb=Detected
+        if test -d "$HOME/vimfiles" && ! test -d "$HOME/.vim"
+        then
+            dir="$HOME/vimfiles"
+        else
+            dir="$HOME/.vim"
+        fi
+        ;;
+    *)
+        dir=$(realpath -- "$vimfiles")
+        test -d "$dir" || mkdir -p -- "$dir" || die
+        ;;
+    esac
+    printf "%s \`%s' as Vim personal directory\n" "$verb" "$dir"
+}
+
+CopyFiles () {
+    local dir shdir copydir
+    local dirs="colors:ftdetect:ftplugin:indent:pack:spell:syntax"
+    test ! "$copy" && return
+    printf "Copy Vim personal configurations\n"
+    shdir=$(dirname "$(realpath -- "$BASH_SOURCE")")
+    copydir="$shdir/copy"
+    if ! test -d "$copydir"
+    then
+        printf >&2 "warning: did not find directory \`%s', skipped\n" "$copydir"
+        return 0
+    fi
+    GetVimDir
+    CopyVimrc || return
+    CopyDirs "$dirs" || return
+}
+
 CreateBat () {
     local mintty='"%ProgramFiles%\Git\usr\bin\mintty.exe"'
     local cmdflag='--title Vom /bin/bash --login -c "%bashcmd%"'
@@ -189,6 +281,8 @@ Register () {
 
 CheckOnlyMode () {
     test ! "$only" && return
+    test $((regonly+batonly+copyonly)) -eq 1 ||
+        die "error: multiple \`only' opreations specified"
     if test "$regonly"
     then
         Register
@@ -197,6 +291,11 @@ CheckOnlyMode () {
     if test "$batonly"
     then
         CreateBat
+        exit
+    fi
+    if test "$copyonly"
+    then
+        CopyFiles
         exit
     fi
     die "error: no matching operation in only mode"
@@ -253,6 +352,46 @@ ParseArgs () {
             regonly=1
             shift
             ;;
+        --copy)
+            copy=1
+            shift
+            ;;
+        --no-copy)
+            test "$copyonly" &&
+                die "error: \`no-copy' and \`copy-only' cannot be used together"
+            copy=
+            shift
+            ;;
+        --copy-only)
+            copy=1
+            only=1
+            copyonly=1
+            shift
+            ;;
+        --vimfiles)
+            vimfiles=1
+            shift
+            ;;
+        --no-vimfiles)
+            vimfiles=
+            shift
+            ;;
+        --auto-vimfiles)
+            vimfiles=auto
+            shift
+            ;;
+        --vimfiles=*)
+            vimfiles=${1#--vimfiles=}
+            shift
+            ;;
+        --backup)
+            bak=1
+            shift
+            ;;
+        --no-backup)
+            bak=
+            shift
+            ;;
         *)
             die "error: invalid argument \`$1'"
             ;;
@@ -262,8 +401,10 @@ ParseArgs () {
 
 main () {
     local uninstall= only= bat= batonly= reg=1 regonly=
+    local copy=1 copyonly= vimfiles=auto bak=1
     ParseArgs "$@"
     Install || return
+    CopyFiles || return
 }
 
 main "$@"
