@@ -33,6 +33,22 @@ Backup () {
     popd 1>/dev/null || return
 }
 
+CopyDotFiles () {
+    local IFS=':'
+    local f flocal
+    test ! -d "$dotfilesdir" && return
+    pushd "$dotfilesdir" 1>/dev/null || return
+    for f in *
+    do
+        test ! -f "$f" && continue
+        flocal=".$f"
+        printf "Copy \`%s' to \`%s'\n" "$f" "$HOME/$flocal"
+        Backup "$HOME/$flocal" || return
+        cp "$f" "$HOME/$flocal" || return
+    done
+    popd 1>/dev/null || return
+}
+
 CopyVimfiles () {
     local IFS=':'
     local d
@@ -91,12 +107,13 @@ GetVimDir () {
 }
 
 CopyFiles () {
-    local dir shdir copydir vimfilesdir
+    local dir shdir copydir vimfilesdir dotfilesdir
     test ! "$copy" && return
     printf "Copy Vim personal configurations\n"
     shdir=$(dirname "$(realpath -- "$BASH_SOURCE")")
     copydir="$shdir/copy"
     vimfilesdir="$copydir/vimfiles"
+    dotfilesdir="$copydir/dotfiles"
     if ! test -d "$copydir"
     then
         printf >&2 "warning: did not find directory \`%s', skipped\n" "$copydir"
@@ -104,6 +121,7 @@ CopyFiles () {
     fi
     GetVimDir
     CopyVimfiles || return
+    CopyDotFiles || return
 }
 
 CreateBat () {
