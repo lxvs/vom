@@ -1,6 +1,5 @@
 #!/bin/bash
 set -o nounset
-set -o noglob
 
 die () {
     while test $# -ge 1
@@ -40,7 +39,7 @@ CopyVimfiles () {
     test ! -d "$vimfilesdir" && return
     pushd "$vimfilesdir" 1>/dev/null || return
     CopyVimrc || return
-    for d in $dirs
+    for d in *
     do
         test ! -d "$d" && continue
         printf "Copy \`%s' into \`%s'\n" "$d" "$dir/"
@@ -93,7 +92,6 @@ GetVimDir () {
 
 CopyFiles () {
     local dir shdir copydir vimfilesdir
-    local dirs="colors:ftdetect:ftplugin:indent:pack:spell:syntax"
     test ! "$copy" && return
     printf "Copy Vim personal configurations\n"
     shdir=$(dirname "$(realpath -- "$BASH_SOURCE")")
@@ -105,7 +103,7 @@ CopyFiles () {
         return 0
     fi
     GetVimDir
-    CopyVimfiles "$dirs" || return
+    CopyVimfiles || return
 }
 
 CreateBat () {
