@@ -39,6 +39,7 @@ CopyDirs () {
     local d
     for d in $dirs
     do
+        test ! -d "$copydir/$d" && continue
         printf "Copy \`%s' into \`%s'\n" "$d" "$dir/"
         Backup "$dir/$d" || return
         cp -r "$copydir/$d" "$dir/$d" || return
