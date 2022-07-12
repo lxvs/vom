@@ -34,16 +34,20 @@ Backup () {
     popd 1>/dev/null || return
 }
 
-CopyDirs () {
+CopyVimfiles () {
     local IFS=':'
     local d
+    test ! -d "$vimfilesdir" && return
+    pushd "$vimfilesdir" 1>/dev/null || return
+    CopyVimrc || return
     for d in $dirs
     do
-        test ! -d "$copydir/$d" && continue
+        test ! -d "$d" && continue
         printf "Copy \`%s' into \`%s'\n" "$d" "$dir/"
         Backup "$dir/$d" || return
-        cp -r "$copydir/$d" "$dir/$d" || return
+        cp -r "$d" "$dir/$d" || return
     done
+    popd 1>/dev/null || return
 }
 
 CopyVimrc () {
@@ -53,12 +57,12 @@ CopyVimrc () {
     local rclocal="$HOME/.vimrc"
     for rc in $rclist
     do
-        test -e "$copydir/$rc" && break
+        test -e "$rc" && break
     done
     test "$rc" = "NONE" && return
     printf "Copy \`%s' to \`%s'\n" "$rc" "$rclocal"
     Backup "$rclocal" || return
-    cp "$copydir/$rc" "$rclocal" || return
+    cp "$rc" "$rclocal" || return
 }
 
 GetVimDir () {
@@ -88,20 +92,20 @@ GetVimDir () {
 }
 
 CopyFiles () {
-    local dir shdir copydir
+    local dir shdir copydir vimfilesdir
     local dirs="colors:ftdetect:ftplugin:indent:pack:spell:syntax"
     test ! "$copy" && return
     printf "Copy Vim personal configurations\n"
     shdir=$(dirname "$(realpath -- "$BASH_SOURCE")")
     copydir="$shdir/copy"
+    vimfilesdir="$copydir/vimfiles"
     if ! test -d "$copydir"
     then
         printf >&2 "warning: did not find directory \`%s', skipped\n" "$copydir"
         return 0
     fi
     GetVimDir
-    CopyVimrc || return
-    CopyDirs "$dirs" || return
+    CopyVimfiles "$dirs" || return
 }
 
 CreateBat () {
