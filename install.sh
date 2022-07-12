@@ -60,7 +60,7 @@ CopyVimfiles () {
         test ! -d "$d" && continue
         printf "Copy \`%s' into \`%s'\n" "$d" "$dir/"
         Backup "$dir/$d" || return
-        cp -r "$d" "$dir/$d" || return
+        cp -r "$d" "$dir/" || return
     done
     popd 1>/dev/null || return
 }
