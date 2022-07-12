@@ -39,10 +39,31 @@ CopyDirs () {
     local d
     for d in $dirs
     do
-        test ! -d "$copydir/$d" && continue
+        test ! -d "$vimfilesdir/$d" && continue
         printf "Copy \`%s' into \`%s'\n" "$d" "$dir/"
         Backup "$dir/$d" || return
-        cp -r "$copydir/$d" "$dir/$d" || return
+        cp -r "$vimfilesdir/$d" "$dir/$d" || return
+    done
+}
+
+CopyDotFiles () {
+    local IFS=':'
+    local flist="bash_profile:bashrc:gitconfig:minttyrc"
+    local f realf
+    for f in $flist
+    do
+        if test -e "$dotfilesdir/$f"
+        then
+            realf=$f
+        elif test -e "$dotfilesdir/.$f"
+        then
+            realf=".$f"
+        else
+            continue
+        fi
+        printf "Copy \`%s' to \`%s'\n" "$dotfilesdir/$realf" "$HOME/.$f"
+        Backup "$HOME/.$f" || return
+        cp "$dotfilesdir/$realf" "$HOME/.$f" || return
     done
 }
 
@@ -53,12 +74,12 @@ CopyVimrc () {
     local rclocal="$HOME/.vimrc"
     for rc in $rclist
     do
-        test -e "$copydir/$rc" && break
+        test -e "$vimfilesdir/$rc" && break
     done
     test "$rc" = "NONE" && return
     printf "Copy \`%s' to \`%s'\n" "$rc" "$rclocal"
     Backup "$rclocal" || return
-    cp "$copydir/$rc" "$rclocal" || return
+    cp "$vimfilesdir/$rc" "$rclocal" || return
 }
 
 GetVimDir () {
@@ -88,12 +109,14 @@ GetVimDir () {
 }
 
 CopyFiles () {
-    local dir shdir copydir
+    local dir shdir copydir vimfilesdir dotfilesdir
     local dirs="colors:ftdetect:ftplugin:indent:pack:spell:syntax"
     test ! "$copy" && return
     printf "Copy Vim personal configurations\n"
     shdir=$(dirname "$(realpath -- "$BASH_SOURCE")")
     copydir="$shdir/copy"
+    vimfilesdir="$copydir/vimfiles"
+    dotfilesdir="$copydir/dotfiles"
     if ! test -d "$copydir"
     then
         printf >&2 "warning: did not find directory \`%s', skipped\n" "$copydir"
@@ -101,6 +124,7 @@ CopyFiles () {
     fi
     GetVimDir
     CopyVimrc || return
+    CopyDotFiles || return
     CopyDirs "$dirs" || return
 }
 
