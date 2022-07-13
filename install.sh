@@ -447,7 +447,9 @@ ParseArgs () {
 }
 
 main () {
-    local uninstall= only= bat=auto batonly= reg=auto regonly=
+    local uninstall= only=
+    local reg=auto regonly=
+    local bat=auto batonly=
     local copy=1 copyonly= vimfiles=auto bak=1
     local iswindows= isprivileged= WINDIR=${WINDIR-}
     ParseArgs "$@"
