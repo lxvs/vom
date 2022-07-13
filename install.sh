@@ -10,26 +10,50 @@ die () {
     exit 1
 }
 
-Backup () {
-    local f=$1
-    local tb
+AvailableFilename () {
+    local name=$1 suffix=
     local i=1
-    test ! "$bak" && return
-    test ! -e "$f" && return
-    test -d "$f" && rmdir -- "$f" 2>/dev/null && return
-    tb="$f.tgz"
-    if test -e "$tb"
+    local final=
+    test $# -ge 2 && suffix=$2
+    final="$name$suffix"
+    if test -e "$final"
     then
-        tb="$f.$i.tgz"
-        while test -e "$tb"
+        final="$name.$i$suffix"
+        while test -e "$final"
         do
             printf -v i "%d" "$((i+1))"
-            tb="$f.$i.tgz"
+            final="$name.$i$suffix"
         done
     fi
-    printf "\`%s' exists, so create a backup \`%s'\n" "$f" "$tb"
+    printf "%s" "$final"
+}
+
+Backup () {
+    local f=$1
+    local ext=".gz"
+    local ball
+    test ! "$bak" && return
+    test ! -e "$f" && return
+    if test -d "$f"
+    then
+        rmdir -- "$f" 2>/dev/null && return
+        ext=".tgz"
+    fi
+    ball=$(AvailableFilename "$f" "$ext")
+    printf "\`%s' exists, so create a backup \`%s'\n" "$f" "$ball"
     pushd "$(dirname "$f")" 1>/dev/null || return
-    tar --remove-files -zcp -f "$tb" "$(basename "$f")" || return
+    case $ext in
+    .tgz)
+        tar --remove-files -zcp -f "$ball" -- "$(basename "$f")" || return
+        ;;
+    .gz)
+        gzip --stdout -- "$f" >"$ball" || return
+        rm "$f"
+        ;;
+    *)
+        dir "internal error: invalid extension \`$ext'"
+        ;;
+    esac
     popd 1>/dev/null || return
 }
 
