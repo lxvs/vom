@@ -37,6 +37,7 @@ CopyDotFiles () {
     local IFS=':'
     local f flocal
     test ! -d "$dotfilesdir" && return
+    printf "Copy dot-files\n"
     pushd "$dotfilesdir" 1>/dev/null || return
     for f in *
     do
@@ -53,7 +54,9 @@ CopyVimfiles () {
     local IFS=':'
     local d
     test ! -d "$vimfilesdir" && return
+    printf "Copy Vim files\n"
     pushd "$vimfilesdir" 1>/dev/null || return
+    GetVimDir
     CopyVimrc || return
     test -d "$dir" || mkdir -p -- "$dir" || return
     for d in *
@@ -110,7 +113,7 @@ GetVimDir () {
 CopyFiles () {
     local dir shdir copydir vimfilesdir dotfilesdir
     test ! "$copy" && return
-    printf "Copy Vim personal configurations\n"
+    printf "Copy configuration files\n"
     shdir=$(dirname "$(realpath -- "$BASH_SOURCE")")
     copydir="$shdir/copy"
     vimfilesdir="$copydir/vimfiles"
@@ -120,7 +123,6 @@ CopyFiles () {
         printf >&2 "warning: did not find directory \`%s', skipped\n" "$copydir"
         return 0
     fi
-    GetVimDir
     CopyVimfiles || return
     CopyDotFiles || return
 }
