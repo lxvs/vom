@@ -55,6 +55,7 @@ CopyVimfiles () {
     test ! -d "$vimfilesdir" && return
     pushd "$vimfilesdir" 1>/dev/null || return
     CopyVimrc || return
+    test -d "$dir" || mkdir -p -- "$dir" || return
     for d in *
     do
         test ! -d "$d" && continue
