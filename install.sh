@@ -132,8 +132,8 @@ CreateBat () {
     local cmdflag='--title Vom /bin/bash --login -c "%bashcmd%"'
     if test "$uninstall"
     then
-        printf "Remove bat file\n"
         test ! -e "$(cygpath "$WINDIR\\vom.bat")" && return
+        printf "Remove bat file\n"
         if ! net session 1>/dev/null 2>&1
         then
             printf >&2 "warning: not enough permission to remove bat file, skipped\n"
