@@ -114,16 +114,16 @@ CopyFiles () {
     local dir shdir copydir vimfilesdir dotfilesdir
     test "$uninstall" && return
     test ! "$copy" && return
-    printf "Copy configuration files\n"
     shdir=$(dirname "$(realpath -- "$BASH_SOURCE")")
     copydir="$shdir/copy"
     vimfilesdir="$copydir/vimfiles"
     dotfilesdir="$copydir/dotfiles"
     if ! test -d "$copydir"
     then
-        printf >&2 "warning: did not find directory \`%s', skipped\n" "$copydir"
-        return 0
+        test "$copy" = "auto" && return
+        die "error: flag \`copy' was specified but directory \`$copydir' does not exist"
     fi
+    printf "Copy configuration files\n"
     CopyVimfiles || return
     CopyDotFiles || return
 }
@@ -450,7 +450,7 @@ main () {
     local uninstall= only=
     local reg=auto regonly=
     local bat=auto batonly=
-    local copy=1 copyonly= vimfiles=auto bak=1
+    local copy=auto copyonly= vimfiles=auto bak=1
     local iswindows= isprivileged= WINDIR=${WINDIR-}
     ParseArgs "$@"
     CheckWindows
