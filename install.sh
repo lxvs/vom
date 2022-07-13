@@ -132,6 +132,7 @@ CreateBat () {
     local cmdflag='--title Vom /bin/bash --login -c "%bashcmd%"'
     if test "$uninstall"
     then
+        test ! "$iswindows" && return
         test ! -e "$(cygpath "$WINDIR\\vom.bat")" && return
         printf "Remove bat file\n"
         if ! test "$isprivileged"
