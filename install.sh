@@ -112,6 +112,7 @@ GetVimDir () {
 
 CopyFiles () {
     local dir shdir copydir vimfilesdir dotfilesdir
+    test "$uninstall" && return
     test ! "$copy" && return
     printf "Copy configuration files\n"
     shdir=$(dirname "$(realpath -- "$BASH_SOURCE")")
