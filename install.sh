@@ -134,7 +134,7 @@ CreateBat () {
     then
         test ! -e "$(cygpath "$WINDIR\\vom.bat")" && return
         printf "Remove bat file\n"
-        if ! net session 1>/dev/null 2>&1
+        if ! test "$isprivileged"
         then
             printf >&2 "warning: not enough permission to remove bat file, skipped\n"
             return 0
@@ -142,9 +142,9 @@ CreateBat () {
         rm -f "$(cygpath "$WINDIR\\vom.bat")"
     else
         test ! "$bat" && return
-        IsOnWindows || die "error: system is not Windows"
+        test "$iswindows" || die "error: system is not Windows"
         printf "Create bat file\n"
-        net session 1>/dev/null 2>&1 ||
+        test "$isprivileged" ||
             die "error: not enough permission to create bat file"
         printf >"$(cygpath "$WINDIR\\vom.bat")" "%s\r\n" \
             "@echo off" \
@@ -304,7 +304,7 @@ Register () {
     local t_sz="REG_SZ" t_ex="REG_EXPAND_SZ" t_none="REG_NONE"
     local -A ftt
     test ! "$reg" && return
-    IsOnWindows || die "error: system is not Windows"
+    test "$iswindows" || die "error: system is not Windows"
     InitFileTypeTable || return
     RegProgram || return
     RegMinttyPath || return
@@ -339,8 +339,22 @@ Install () {
     CreateBat || return
 }
 
-IsOnWindows () {
-    grep -Gqi '^win' <<<"${OS-}"
+CheckPrivilege () {
+    net session 1>/dev/null 2>&1 && isprivileged=1
+}
+
+CheckWindows () {
+    if test "$WINDIR"
+    then
+        iswindows=1
+        CheckPrivilege
+        test "$reg" = "auto" && reg=1
+        test "$bat" = "auto" && bat=$isprivileged
+    else
+        iswindows=
+        test "$reg" = "auto" && reg=
+        test "$bat" = "auto" && bat=
+    fi
 }
 
 ParseArgs () {
@@ -431,9 +445,11 @@ ParseArgs () {
 }
 
 main () {
-    local uninstall= only= bat= batonly= reg=1 regonly=
+    local uninstall= only= bat=auto batonly= reg=auto regonly=
     local copy=1 copyonly= vimfiles=auto bak=1
+    local iswindows= isprivileged= WINDIR=${WINDIR-}
     ParseArgs "$@"
+    CheckWindows
     CheckOnlyMode
     Install || return
     CopyFiles || return
