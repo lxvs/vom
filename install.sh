@@ -142,6 +142,7 @@ CreateBat () {
         rm -f "$(cygpath "$WINDIR\\vom.bat")"
     else
         test ! "$bat" && return
+        IsOnWindows || die "error: system is not Windows"
         printf "Create bat file\n"
         net session 1>/dev/null 2>&1 ||
             die "error: not enough permission to create bat file"
@@ -303,6 +304,7 @@ Register () {
     local t_sz="REG_SZ" t_ex="REG_EXPAND_SZ" t_none="REG_NONE"
     local -A ftt
     test ! "$reg" && return
+    IsOnWindows || die "error: system is not Windows"
     InitFileTypeTable || return
     RegProgram || return
     RegMinttyPath || return
@@ -333,8 +335,6 @@ CheckOnlyMode () {
 }
 
 Install () {
-    IsOnWindows || die "error: system is not Windows"
-    CheckOnlyMode
     Register || return
     CreateBat || return
 }
@@ -434,6 +434,7 @@ main () {
     local uninstall= only= bat= batonly= reg=1 regonly=
     local copy=1 copyonly= vimfiles=auto bak=1
     ParseArgs "$@"
+    CheckOnlyMode
     Install || return
     CopyFiles || return
 }
