@@ -82,7 +82,6 @@ CopyVimfiles () {
     pushd "$vimfilesdir" 1>/dev/null || return
     GetVimDir
     CopyVimrc || return
-    test -d "$dir" || mkdir -p -- "$dir" || return
     for d in *
     do
         test ! -d "$d" && continue
@@ -133,6 +132,7 @@ GetVimDir () {
         ;;
     esac
     printf "%s \`%s' as Vim personal directory\n" "$verb" "$dir"
+    test -d "$dir" || mkdir -p -- "$dir" || return
 }
 
 CopyFiles () {
