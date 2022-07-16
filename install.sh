@@ -103,6 +103,7 @@ CopyVimrc () {
         test -e "$rc" && break
     done
     test "$rc" = "NONE" && return
+    test -f "$rclocal" || rclocal="$dir/vimrc"
     printf "Copy \`%s' to \`%s'\n" "$rc" "$rclocal"
     Backup "$rclocal" || return
     cp "$rc" "$rclocal" || return
