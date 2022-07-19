@@ -156,29 +156,56 @@ CopyFiles () {
 CreateBat () {
     local mintty='"%ProgramFiles%\Git\usr\bin\mintty.exe"'
     local cmdflag='--title Vom /bin/bash --login -c "%bashcmd%"'
+    local vim='"%ProgramFiles%\Git\usr\bin\vim.exe"'
+    local windir
+    windir=$(cygpath "$WINDIR") || return
     if test "$uninstall"
     then
         test ! "$iswindows" && return
-        test ! -e "$(cygpath "$WINDIR\\vom.bat")" && return
+        test ! -f "$windir/vom.bat" && test ! -f "$windir/vim.bat" && test ! -f "$windir/vi.bat" && return
         printf "Remove bat file\n"
         if ! test "$isprivileged"
         then
             printf >&2 "warning: not enough permission to remove bat file, skipped\n"
             return 0
         fi
-        rm -f "$(cygpath "$WINDIR\\vom.bat")"
+        test -f "$windir/vom.bat" && test "$(head -n1 "$windir/vom.bat")" = "@rem created by vom" && rm -f "$windir/vom.bat"
+        test -f "$windir/vim.bat" && test "$(head -n1 "$windir/vim.bat")" = "@rem created by vom" && rm -f "$windir/vim.bat"
+        test -f "$windir/vi.bat" && test "$(head -n1 "$windir/vi.bat")" = "@rem created by vom" && rm -f "$windir/vi.bat"
     else
         test ! "$bat" && return
         test "$iswindows" || die "error: system is not Windows"
         printf "Create bat file\n"
         test "$isprivileged" ||
             die "error: not enough permission to create bat file"
-        printf >"$(cygpath "$WINDIR\\vom.bat")" "%s\r\n" \
-            "@echo off" \
-            "setlocal" \
-            'set "bashcmd=/usr/bin/vim %*"' \
-            'set "bashcmd=%bashcmd:"=\"%"' \
-            "$mintty $cmdflag"
+        if test -f "$windir/vom.bat" && test "$(head -n1 "$windir/vom.bat")" != "@rem created by vom"
+        then
+            printf >&2 "warning: \`%s' exists, skipped\n" "$windir/vom.bat"
+        else
+            printf >"$windir/vom.bat" "%s\r\n" \
+                "@rem created by vom" \
+                "@echo off" \
+                "setlocal" \
+                'set "bashcmd=/usr/bin/vim %*"' \
+                'set "bashcmd=%bashcmd:"=\"%"' \
+                "$mintty $cmdflag"
+        fi
+        if test -f "$windir/vim.bat" && test "$(head -n1 "$windir/vim.bat")" != "@rem created by vom"
+        then
+            printf >&2 "warning: \`%s' exists, skipped\n" "$windir/vim.bat"
+        else
+            printf >"$windir/vim.bat" "%s\r\n" \
+                "@rem created by vom" \
+                "@$vim %*"
+        fi
+        if test -f "$windir/vi.bat" && test "$(head -n1 "$windir/vi.bat")" != "@rem created by vom"
+        then
+            printf >&2 "warning: \`%s' exists, skipped\n" "$windir/vi.bat"
+        else
+            printf >"$windir/vi.bat" "%s\r\n" \
+                "@rem created by vom" \
+                "@$vim %*"
+        fi
     fi
 }
 
