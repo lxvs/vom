@@ -305,6 +305,7 @@ InitFileTypeTable () {
         ['gitattributes']='Git Attributes File' \
         ['gitconfig']='Git Configuration File' \
         ['gitignore']='Git Ignore File' \
+        ['gitmodules']='Git Modules File' \
         ['go']='Go Source File' \
         ['groovy']='Groovy Source File' \
         ['h']='C Header Source File' \
