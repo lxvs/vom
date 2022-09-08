@@ -281,6 +281,7 @@ RegProgram () {
 
 InitFileTypeTable () {
     ftt=( \
+        ['adoc']='AsciiDoc File' \
         ['asl']='ACPI Source Language File' \
         ['ass']='ASS Subtitle File' \
         ['bash']='Bash Script' \
