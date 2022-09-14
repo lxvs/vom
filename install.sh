@@ -321,6 +321,7 @@ InitFileTypeTable () {
         ['lesshst']='Less History File' \
         ['log']='Log File' \
         ['lua']='Lua Source File' \
+        ['mak']='Makefile Source File' \
         ['makefile']='Makefile Source File' \
         ['markdown']='Markdown File' \
         ['md']='Markdown File' \
