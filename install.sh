@@ -315,6 +315,7 @@ InitFileTypeTable () {
         ['htm']='HTML Source File' \
         ['html']='HTML Source File' \
         ['ini']='INI Configuration File' \
+        ['inputrc']='Inputrc File' \
         ['java']='Java Source File' \
         ['js']='JavaScript Source File' \
         ['json']='JavaScript Object Notation File' \
